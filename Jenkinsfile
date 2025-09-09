@@ -52,15 +52,15 @@ pipeline {
         stage('Run Application') {
             steps {
                 script {
-                    // Get jar file name safely
+                    // Extract only the jar filename (basename) to avoid path issues
                     def jarFile = bat(
-                        script: 'dir /B target\\*.jar',
+                        script: 'for %i in (target\\*.jar) do @echo %~nxi',
                         returnStdout: true
                     ).trim()
 
                     echo "Starting ${jarFile}"
 
-                    // Start app in background, redirect logs
+                    // Start the application in the background, log output to app.log
                     bat """
                         start /B java -jar target\\${jarFile} > app.log 2>&1
                     """
