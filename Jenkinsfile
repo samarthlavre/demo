@@ -11,7 +11,6 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // If project has mvnw.cmd wrapper, use it; otherwise use installed Maven
                     if (fileExists('mvnw.cmd')) {
                         bat 'mvnw.cmd -B -DskipTests clean package'
                     } else {
@@ -33,15 +32,19 @@ pipeline {
             }
             post {
                 always {
-                    // Publish JUnit test reports
-                    junit 'target/surefire-reports/*.xml'
+                    script {
+                        if (fileExists('target/surefire-reports')) {
+                            junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
+                        } else {
+                            echo "⚠️ No test reports found, skipping JUnit publish."
+                        }
+                    }
                 }
             }
         }
 
         stage('Archive Artifact') {
             steps {
-                // Save the built JAR in Jenkins
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
@@ -49,7 +52,6 @@ pipeline {
         stage('Run Application') {
             steps {
                 script {
-                    // Find the generated JAR file
                     def jarFile = bat(
                         script: 'for %i in (target\\*.jar) do @echo %i',
                         returnStdout: true
@@ -57,21 +59,5 @@ pipeline {
 
                     echo "Starting ${jarFile}"
 
-                    // Run it in background (logs saved to app.log)
                     bat """
                         start /B java -jar ${jarFile} > app.log 2>&1
-                    """
-                }
-            }
-        }
-    }
-
-    post {
-        success {
-            echo '✅ Build and Run Successful!'
-        }
-        failure {
-            echo '❌ Build Failed.'
-        }
-    }
-}
