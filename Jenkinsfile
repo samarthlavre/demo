@@ -61,3 +61,19 @@ pipeline {
 
                     bat """
                         start /B java -jar ${jarFile} > app.log 2>&1
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Build and Run Successful!'
+        }
+        failure {
+            echo '❌ Build Failed.'
+        }
+    }
+}
+
