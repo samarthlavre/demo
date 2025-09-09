@@ -52,15 +52,18 @@ pipeline {
         stage('Run Application') {
             steps {
                 script {
+                    // Get the first JAR file name (not full path)
                     def jarFile = bat(
-                        script: 'for %i in (target\\*.jar) do @echo %i',
+                        script: 'for %i in (target\\*.jar) do @echo %~nxi & exit /b',
                         returnStdout: true
                     ).trim()
 
                     echo "Starting ${jarFile}"
 
+                    // Stop any old Java process (optional, prevents multiple apps running)
                     bat """
-                        start /B java -jar ${jarFile} > app.log 2>&1
+                        taskkill /F /IM java.exe >nul 2>&1
+                        start /B java -jar target\\${jarFile} > app.log 2>&1
                     """
                 }
             }
@@ -76,4 +79,3 @@ pipeline {
         }
     }
 }
-
