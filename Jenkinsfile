@@ -52,15 +52,14 @@ pipeline {
         stage('Run Application') {
             steps {
                 script {
-                    // Extract only the jar filename (basename) to avoid path issues
+                    // Use %%i for bat loops inside Jenkins
                     def jarFile = bat(
-                        script: 'for %i in (target\\*.jar) do @echo %~nxi',
+                        script: 'for %%i in (target\\*.jar) do @echo %%~nxi',
                         returnStdout: true
                     ).trim()
 
                     echo "Starting ${jarFile}"
 
-                    // Start the application in the background, log output to app.log
                     bat """
                         start /B java -jar target\\${jarFile} > app.log 2>&1
                     """
