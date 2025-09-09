@@ -52,17 +52,18 @@ pipeline {
         stage('Run Application') {
             steps {
                 script {
-                    // Get only the JAR file name (filename + extension)
+                    // Get only the JAR filename (e.g. demo-1.0-SNAPSHOT.jar)
                     def jarFile = bat(
-                        script: 'for %%i in (target\\*.jar) do @echo %%~nxi',
+                        script: 'for %i in (target\\*.jar) do @echo %~nxi',
                         returnStdout: true
                     ).trim()
 
-                    echo "Starting ${jarFile}"
+                    echo "Starting JAR: ${jarFile}"
 
                     // Run the JAR from the target folder
                     bat """
-                        start /B java -jar target\\${jarFile} > app.log 2>&1
+                        cd target
+                        start /B java -jar ${jarFile} > ../app.log 2>&1
                     """
                 }
             }
